@@ -16,9 +16,14 @@ const JobListings = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/jobs/');
+        const token = localStorage.getItem("token");
+        const response = await fetch('http://127.0.0.1:8000/user_jobs/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!response.ok) {
-          throw new Error('Failed to fetch jobs');
+          throw new Error('Login to view jobs');
         }
         const data = await response.json();
         setJobs(data);
@@ -31,6 +36,29 @@ const JobListings = () => {
 
     fetchJobs();
   }, []);
+
+  const applyToJob = async (jobId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://127.0.0.1:8000/applications/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ job_id: jobId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("You have already applied to this job.");
+      }
+
+      alert("Application submitted!");
+    } catch (error) {
+      console.error("Application Error:", error.message);
+      alert("Error: " + error.message);
+    }
+  };
 
   const filteredJobs = jobs.filter(job => {
     const matchesSearch =
@@ -107,11 +135,17 @@ const JobListings = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 md:mt-0">
-                    <span className="text-sm text-gray-500">
+                  <div className="mt-4 md:mt-0 flex items-center">
+                    <span className="text-sm text-gray-500 mr-4">
                       {job.posted_at ? `Posted ${new Date(job.posted_at).toLocaleDateString()}` : "New"}
                     </span>
-                    <button className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 hidden md:inline-block">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        applyToJob(job.id);
+                      }}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                    >
                       Apply Now
                     </button>
                   </div>
