@@ -65,7 +65,10 @@ function LoginPage() {
     const userInfo = await userInfoRes.json();
 
     // ✅ Redirect based on profile_status
-    if (userInfo.profile_status === "YES") {
+    if (userInfo.role === "admin") {
+      navigate("/admin");
+    }
+    else if (userInfo.profile_status === "YES") {
       navigate("/profile");
     } else {
       navigate("/resume");

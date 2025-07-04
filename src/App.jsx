@@ -27,6 +27,7 @@ import RegisterPage from "./Register";
 import LoginPage from "./login";
 import Profile from "./profile";
 import JobListings from "./jobs";
+import AdminPanel from "./Admin";
 
 // ✅ Import your Form Provider
 import { FormProvider } from "./Formcontext";
@@ -109,7 +110,9 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/jobs" element={<JobListings />} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
+
       </FormProvider>
     </Router>
   );
