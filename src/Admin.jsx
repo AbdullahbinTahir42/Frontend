@@ -1,3 +1,5 @@
+// ✅ Updated AdminPanel using Profile objects instead of Users
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -8,17 +10,18 @@ export default function AdminPanel() {
     applications: 0,
     profiles: 0,
   });
-  const [users, setUsers] = useState([]);
+  const [profiles, setProfiles] = useState([]); // Renamed from users
   const [jobs, setJobs] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [newJob, setNewJob] = useState({
     title: "",
     location: "",
     company: "",
     description: "",
     salary: "",
-    type: "Full-time",  // ✅ Matches FastAPI
-    experience: "Mid-level",  // ✅ Matches FastAPI
-});
+    type: "Full-time",
+    experience: "Mid-level",
+  });
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [showJobForm, setShowJobForm] = useState(false);
@@ -28,15 +31,18 @@ export default function AdminPanel() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsRes, usersRes, jobsRes] = await Promise.all([
-          axios.get(`${API_URL}/admin/stats`),
-          axios.get(`${API_URL}/admin/users`),
-          axios.get(`${API_URL}/admin/jobs`),
-        ]);
+        const [statsRes, profilesRes, jobsRes, applicationsRes] =
+          await Promise.all([
+            axios.get(`${API_URL}/admin/stats`),
+            axios.get(`${API_URL}/admin/profiles`),
+            axios.get(`${API_URL}/admin/jobs`),
+            axios.get(`${API_URL}/admin/applications`),
+          ]);
 
         setStats(statsRes.data);
-        setUsers(usersRes.data);
+        setProfiles(profilesRes.data);
         setJobs(jobsRes.data);
+        setApplications(applicationsRes.data);
       } catch (error) {
         console.error("Error fetching data:", error);
         showNotification("Failed to load data", "error");
@@ -48,80 +54,84 @@ export default function AdminPanel() {
     fetchData();
   }, []);
 
-const handleAddJob = async (e) => {
-  e.preventDefault();
-  try {
-    const jobData = {
-      title: newJob.title,
-      location: newJob.location,
-      company: newJob.company,
-      description: newJob.description,
-      salary: newJob.salary ? parseInt(newJob.salary) : null,  // ✅ fix here
-      type: newJob.type,
-      experience: newJob.experience,
-    };
+  const handleMarkPayment = async (profileId) => {
+    if (!window.confirm("Are you sure you want to mark this payment as done?"))
+      return;
 
-    const response = await axios.post(`${API_URL}/admin/jobs`, jobData);
-    setJobs([...jobs, response.data]);
-    setNewJob({
-      title: "",
-      location: "",
-      company: "",
-      description: "",
-      salary: "",
-      type: "Full-time",
-      experience: "Mid-level",
-    });
-    setShowJobForm(false);
-    showNotification("Job added successfully!");
-  } catch (error) {
-    console.error("Error adding job:", error);
+    try {
+      await axios.post(
+        `${API_URL}/admin/payment/done`,
+        { profile_id: profileId },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    const errorMsg = error.response?.data?.detail;
+      setProfiles((prev) =>
+        prev.map((p) =>
+          p.id === profileId ? { ...p, payment_status: "Paid" } : p
+        )
+      );
 
-    if (Array.isArray(errorMsg)) {
-      // FastAPI validation errors (422)
-      const messages = errorMsg.map(err => `${err.loc[1]}: ${err.msg}`).join("\n");
-      showNotification(messages, "error");
-    } else {
-      showNotification("Failed to add job", "error");
+      showNotification("Payment marked as completed!");
+    } catch (error) {
+      console.error("Error marking payment:", error);
+      showNotification(
+        "Failed to mark payment: " +
+          (error.response?.data?.detail || "Unknown error"),
+        "error"
+      );
     }
-  }
-};
+  };
 
+  const handleAddJob = async (e) => {
+    e.preventDefault();
+    try {
+      const jobData = {
+        ...newJob,
+        salary: newJob.salary || null,
 
-
-  const handleDeleteJob = async (id) => {
-    if (window.confirm("Are you sure you want to delete this job?")) {
-      try {
-        await axios.delete(`${API_URL}/admin/jobs/${id}`);
-        setJobs(jobs.filter((job) => job.id !== id));
-        setStats((prev) => ({ ...prev, jobs: prev.jobs - 1 }));
-        showNotification("Job deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting job:", error);
-        showNotification("Failed to delete job", "error");
+      };
+      const response = await axios.post(`${API_URL}/admin/jobs`, jobData);
+      setJobs([...jobs, response.data]);
+      setNewJob({
+        title: "",
+        location: "",
+        company: "",
+        description: "",
+        salary: "",
+        type: "Full-time",
+        experience: "Mid-level",
+      });
+      setShowJobForm(false);
+      showNotification("Job added successfully!");
+    } catch (error) {
+      console.error("Error adding job:", error);
+      const errorMsg = error.response?.data?.detail;
+      if (Array.isArray(errorMsg)) {
+        const messages = errorMsg
+          .map((err) => `${err.loc[1]}: ${err.msg}`)
+          .join("\n");
+        showNotification(messages, "error");
+      } else {
+        showNotification("Failed to add job", "error");
       }
     }
   };
 
-  const handlePaymentDone = async (userId) => {
-    if (window.confirm("Are you sure you want to mark this payment as complete?")) {
-      try {
-        const response = await axios.post(`${API_URL}/admin/users/${userId}/complete-payment`);
-        setUsers(
-          users.map((user) =>
-            user.id === userId ? { ...user, payment_status: "completed" } : user
-          )
-        );
-        showNotification("Payment marked as completed!");
-      } catch (error) {
-        console.error("Error updating payment status:", error);
-        showNotification(
-          error.response?.data?.detail || "Failed to update payment status", 
-          "error"
-        );
-      }
+  const handleDeleteJob = async (jobId) => {
+    if (!window.confirm("Are you sure you want to delete this job?")) return;
+
+    try {
+      await axios.delete(`${API_URL}/admin/jobs/${jobId}`);
+      setJobs(jobs.filter((job) => job.id !== jobId));
+      showNotification("Job deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      showNotification("Failed to delete job", "error");
     }
   };
 
@@ -140,7 +150,6 @@ const handleAddJob = async (e) => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      {/* Notification */}
       {notification && (
         <div
           className={`fixed top-4 right-4 p-4 rounded-md shadow-md z-50 ${
@@ -154,14 +163,20 @@ const handleAddJob = async (e) => {
       )}
 
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">
+          Admin Dashboard
+        </h1>
 
-        {/* Stats Section */}
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[
             { key: "users", label: "USERS", value: stats.users },
             { key: "jobs", label: "JOBS", value: stats.jobs },
-            { key: "applications", label: "APPLICATIONS", value: stats.applications },
+            {
+              key: "applications",
+              label: "APPLICATIONS",
+              value: stats.applications,
+            },
             { key: "profiles", label: "PROFILES", value: stats.profiles },
           ].map((stat) => (
             <div
@@ -174,44 +189,134 @@ const handleAddJob = async (e) => {
           ))}
         </div>
 
-        {/* Users Section */}
+        {/* Applications Section */}
         <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800">
-              Users ({users.length})
+              Applications ({applications.length})
             </h2>
           </div>
           <div className="divide-y divide-gray-200">
-            {users.map((user) => (
-              <div key={user.id} className="p-4 hover:bg-gray-50">
+            {applications.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">
+                No applications found
+              </p>
+            ) : (
+              applications.map((application) => (
+                <div key={application.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-gray-600 text-sm">
+                        {application.user_email.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-baseline sm:space-x-2">
+                        <p className="font-medium text-gray-800 truncate">
+                          {application.full_name ||
+                            application.user_email.split("@")[0]}
+                        </p>
+                        <p className="text-gray-500 text-sm">
+                          {application.user_email.toLowerCase()}
+                        </p>
+                      </div>
+
+                      <p className="mt-1 text-gray-700">
+                        Applied for{" "}
+                        <span className="font-medium">
+                          {application.job_title}
+                        </span>
+                      </p>
+
+                      <div className="flex items-center space-x-2 mt-2">
+                        <span
+                          className={`text-xs px-2 py-1 rounded ${
+                            application.status === "Submitted"
+                              ? "bg-blue-100 text-blue-800"
+                              : application.status === "Approved"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {application.status}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          {new Date(
+                            application.application_date
+                          ).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {application.cover_letter && (
+                    <div className="mt-3 pl-14">
+                      <p className="text-gray-600 text-sm font-medium mb-1">
+                        Cover Letter:
+                      </p>
+                      <p className="text-gray-500 text-sm whitespace-pre-line">
+                        {application.cover_letter}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Profiles */}
+        <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
+          <div className="p-4 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Profiles ({profiles.length})
+            </h2>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {profiles.map((profile) => (
+              <div key={profile.id} className="p-4 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
                       <span className="text-gray-600 text-sm">
-                        {user.full_name.charAt(0)}
+                        {profile.full_name.charAt(0)}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">{user.full_name}</p>
-                      <p className="text-gray-600 text-sm">{user.email}</p>
+                      <p className="font-medium text-gray-800">
+                        {profile.full_name}
+                      </p>
+                      <p className="text-gray-600 text-sm">{profile.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span
-                      className={`px-2 py-1 rounded text-xs ${
-                        user.role === "Admin"
-                          ? "bg-purple-100 text-purple-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                    {user.payment_status === "pending" && (
-                      <button
-                        onClick={() => handlePaymentDone(user.id)}
-                        className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
-                      >
-                        Mark Payment Done
+                    {profile.payment_status === "Pending" && (
+                      <div className="bg-yellow-500 text-white px-3 py-1 rounded text-xs hover:bg-yellow-600"
+                     
+                         >
+                        Receipt Pending
+                      </div>
+                    )}
+
+                    {profile.payment_status === "Verifying" && (
+                      <>
+                        <button
+                          onClick={() => handleMarkPayment(profile.id)}
+                          className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
+                        >
+                          Verify Payment
+                        </button>
+                       
+                      </>
+                    )}
+
+                    {profile.payment_status === "Paid" && (
+                      <button className="bg-green-500 text-white px-3 py-1 rounded text-xs cursor-not-allowed">
+                        Payment Verified
                       </button>
                     )}
                   </div>
@@ -221,7 +326,7 @@ const handleAddJob = async (e) => {
           </div>
         </div>
 
-        {/* Jobs Section */}
+        {/* Jobs section */}
         <div className="bg-white rounded-lg shadow border border-gray-200">
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-800">
@@ -364,7 +469,9 @@ const handleAddJob = async (e) => {
           {/* Jobs List */}
           <div className="p-4">
             {jobs.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No jobs available</p>
+              <p className="text-gray-500 text-center py-4">
+                No jobs available
+              </p>
             ) : (
               jobs.map((job) => (
                 <div

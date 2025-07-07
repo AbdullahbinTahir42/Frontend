@@ -28,6 +28,7 @@ import LoginPage from "./login";
 import Profile from "./profile";
 import JobListings from "./jobs";
 import AdminPanel from "./Admin";
+import PaymentForm from "./payment";
 
 // ✅ Import your Form Provider
 import { FormProvider } from "./Formcontext";
@@ -111,6 +112,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/jobs" element={<JobListings />} />
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/payment/form" element={<PaymentForm />} />
         </Routes>
 
       </FormProvider>

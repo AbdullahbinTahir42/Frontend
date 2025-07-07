@@ -112,7 +112,10 @@ export default function Profile() {
             <div>
               <h1 className="text-3xl font-bold">{profile.full_name}</h1>
               <p className="text-indigo-100 text-xl">
-                {profile.job_title || "Your Professional Title"}
+                {(profile.job_title || "Your Professional Title")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")}
               </p>
             </div>
           </div>
@@ -249,19 +252,44 @@ export default function Profile() {
               items={[
                 {
                   label: "Subscription Status",
-                  value: (
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        profile.payment_status === "active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {profile.payment_status === "active"
-                        ? "Active"
-                        : "Pending"}
-                    </span>
-                  ),
+                  value: (() => {
+                    const status = profile.payment_status?.toLowerCase();
+
+                    if (status === "paid") {
+                      return (
+                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                          Paid
+                        </span>
+                      );
+                    }
+
+                    if (status === "verifying") {
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                            Verifying
+                          </span>
+                          <p className="text-sm text-gray-600">
+                            You can explore jobs after admin approval.
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                          Pending
+                        </span>
+                        <button
+                          onClick={() => navigate("/payment/form")}
+                          className="px-3 py-1 text-sm font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+                        >
+                          Pay Now
+                        </button>
+                      </div>
+                    );
+                  })(),
                 },
               ]}
             />
@@ -269,15 +297,20 @@ export default function Profile() {
         </div>
 
         {/* Action Buttons */}
-
-        <div className="bg-gray-50 px-6 py-4 flex justify-end">
+        {profile.payment_status?.toLowerCase() === "paid" ? (
           <button
-            onClick={() => navigate("/jobs")} // Add this line
+            onClick={() => navigate("/jobs")}
             className="px-5 py-2 bg-indigo-600 rounded-lg text-md font-semibold text-white hover:bg-indigo-700"
           >
             See Jobs Related to My Skills
           </button>
-        </div>
+        ) : (
+          <p className="text-red-600 font-semibold text-md">
+            {profile.payment_status?.toLowerCase() === "verifying"
+              ? "Your payment is under verification. You can access jobs after admin approval."
+              : "Clear your payment to access jobs"}
+          </p>
+        )}
       </div>
     </main>
   );
