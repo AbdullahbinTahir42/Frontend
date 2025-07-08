@@ -25,34 +25,43 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [showJobForm, setShowJobForm] = useState(false);
+  const [verifyingProfiles, setVerifyingProfiles] = useState([]); // ✅ Add this
+
 
   const API_URL = "http://127.0.0.1:8000";
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statsRes, profilesRes, jobsRes, applicationsRes] =
-          await Promise.all([
-            axios.get(`${API_URL}/admin/stats`),
-            axios.get(`${API_URL}/admin/profiles`),
-            axios.get(`${API_URL}/admin/jobs`),
-            axios.get(`${API_URL}/admin/applications`),
-          ]);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [
+        statsRes,
+        profilesRes,
+        jobsRes,
+        applicationsRes,
+        verifyingPaymentsRes,
+      ] = await Promise.all([
+        axios.get(`${API_URL}/admin/stats`),
+        axios.get(`${API_URL}/admin/profiles`),
+        axios.get(`${API_URL}/admin/jobs`),
+        axios.get(`${API_URL}/admin/applications`),
+        axios.get(`${API_URL}/admin/payments/users`), // ✅ New: Verifying Payments
+      ]);
 
-        setStats(statsRes.data);
-        setProfiles(profilesRes.data);
-        setJobs(jobsRes.data);
-        setApplications(applicationsRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        showNotification("Failed to load data", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
+      setStats(statsRes.data);
+      setProfiles(profilesRes.data);
+      setJobs(jobsRes.data);
+      setApplications(applicationsRes.data);
+      setVerifyingProfiles(verifyingPaymentsRes.data); // ✅ Set verifying profiles
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      showNotification("Failed to load data", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-  }, []);
+  fetchData();
+}, []);
 
   const handleMarkPayment = async (profileId) => {
     if (!window.confirm("Are you sure you want to mark this payment as done?"))
@@ -93,7 +102,6 @@ export default function AdminPanel() {
       const jobData = {
         ...newJob,
         salary: newJob.salary || null,
-
       };
       const response = await axios.post(`${API_URL}/admin/jobs`, jobData);
       setJobs([...jobs, response.data]);
@@ -188,6 +196,73 @@ export default function AdminPanel() {
             </div>
           ))}
         </div>
+          {/* ✅ Verifying Payments Section */}
+{verifyingProfiles.length > 0 && (
+  <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
+    <div className="p-4 border-b border-gray-200">
+      <h2 className="text-xl font-semibold text-gray-800">
+        Recent Payment Submissions ({verifyingProfiles.length})
+      </h2>
+      <p className="text-sm text-gray-500 mt-1">
+        Users who recently submitted payment receipts
+      </p>
+    </div>
+    <div className="divide-y divide-gray-200">
+      {verifyingProfiles.map((profile) => (
+        <div key={profile.id} className="p-4 hover:bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
+                <span className="text-gray-600 text-sm">
+                  {profile.full_name?.charAt(0)}
+                </span>
+              </div>
+              <div>
+                <p className="font-medium text-gray-800">
+                  {profile.full_name}
+                </p>
+                <p className="text-gray-600 text-sm">{profile.email}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+             
+              {profile.payment && (
+                <a
+                  href={`${API_URL}/admin/payment/receipt/${profile.payment.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+                >
+                  View Receipt
+                </a>
+              )}
+            </div>
+          </div>
+          {profile.payment && (
+            <div className="mt-3 pl-14">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                <div>
+                  <span className="text-gray-500">Method: </span>
+                  <span className="text-gray-700">{profile.payment.method}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Receipt: </span>
+                  <span className="text-gray-700">{profile.payment.receipt_name}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Terms: </span>
+                  <span className="text-gray-700">
+                    {profile.payment.terms_accepted ? "Accepted" : "Not Accepted"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {/* Applications Section */}
         <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
