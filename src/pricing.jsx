@@ -41,7 +41,7 @@ export default function PricingPage() {
           whileHover={{ scale: 1.03 }}
           className="bg-white border border-yellow-300 rounded-2xl p-6 shadow hover:shadow-lg w-full md:w-1/3"
         >
-          <h3 className="text-xl font-bold text-gray-700 mb-1">Plan B</h3>
+          <h3 className="text-xl font-bold text-gray-700 mb-1">Standard Plan</h3>
           <h2 className="text-lg font-bold text-[#ea9f6f] mb-2">14-Day Full Access</h2>
           <p className="text-2xl font-bold text-[#ea9f6f] mb-4">$2.95 (836PKR)</p>
           <ul className="text-sm list-disc ml-5 space-y-2 text-gray-700">
@@ -96,7 +96,7 @@ export default function PricingPage() {
           whileHover={{ scale: 1.03 }}
           className="bg-white border border-yellow-300 rounded-2xl p-6 shadow hover:shadow-lg w-full md:w-1/3"
         >
-          <h3 className="text-xl font-bold text-gray-700 mb-1">Plan A</h3>
+          <h3 className="text-xl font-bold text-gray-700 mb-1">Premium  Plan</h3>
           <div className="text-xs bg-orange-200 text-orange-800 px-2 py-1 rounded-full inline-block mb-2">
             Best value
           </div>

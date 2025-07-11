@@ -112,8 +112,8 @@ export default function PaymentForm() {
           className="w-full px-4 py-2 mb-4 rounded-md border border-orange-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
         >
           <option value="">Select a Plan</option>
-          <option value="Plan A">Plan A (Featured Plan)</option>
-          <option value="Plan B">Plan B (14-Day Full Access)</option>
+          <option value="Plan A">Premium (Featured Plan)</option>
+          <option value="Plan B">Standard (14-Day Full Access)</option>
         </select>
 
         {/* ✅ Payment Instruction */}
