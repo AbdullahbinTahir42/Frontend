@@ -21,7 +21,11 @@ export default function AdminPanel() {
     const fetchData = async () => {
       try {
         const [
-          statsRes, profilesRes, jobsRes, applicationsRes, verifyingPaymentsRes
+          statsRes, 
+          profilesRes, 
+          jobsRes, 
+          applicationsRes, 
+          verifyingPaymentsRes
         ] = await Promise.all([
           axios.get(`${API_URL}/admin/stats`),
           axios.get(`${API_URL}/admin/profiles`),
@@ -129,97 +133,101 @@ export default function AdminPanel() {
           ))}
         </div>
 
-        {/* Payments */}
-        {verifyingProfiles.length > 0 && (
-          <div className="bg-white rounded-lg shadow border mb-8">
-            <div className="p-4 border-b">
-              <h2 className="text-xl font-semibold text-gray-800">
-                Payment Verification ({verifyingProfiles.length})
-              </h2>
+        {/* Verifying Payments Section */}
+  {verifyingProfiles.length > 0 && (
+  <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
+    <div className="p-4 border-b border-gray-200">
+      <h2 className="text-xl font-semibold text-gray-800">
+        Recent Payment Submissions ({verifyingProfiles.length})
+      </h2>
+      <p className="text-sm text-gray-500 mt-1">
+        Users who recently submitted payment receipts
+      </p>
+    </div>
+    <div className="divide-y divide-gray-200">
+      {verifyingProfiles.map((profile) => (
+        <div key={profile.id} className="p-4 hover:bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
+                <span className="text-gray-600 text-sm">
+                  {profile.full_name?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <p className="font-medium text-gray-800">{profile.full_name}</p>
+                <p className="text-gray-600 text-sm">{profile.email}</p>
+              </div>
             </div>
-            <div className="divide-y divide-gray-200">
-              {verifyingProfiles.map(u => (
-                <div key={u.id} className="p-4 flex justify-between items-center">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
-                      <span className="text-gray-600">{u.full_name?.charAt(0)}</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">{u.full_name}</p>
-                      <p className="text-gray-500 text-sm">{u.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    {u.payment && (
-                      <a href={`${API_URL}/admin/payment/receipt/${u.payment.id}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="bg-[#ea9f6f] text-white px-3 py-1 rounded text-xs hover:bg-orange-500">
-                        View Receipt
-                      </a>
-                    )}
-                    {u.payment && u.payment_status !== "Paid" && (
-                      <button onClick={() => handleMarkPayment(u.id)}
-                        className="bg-[#ea9f6f] text-white px-3 py-1 rounded text-xs hover:bg-orange-500">
-                        Verify Payment
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div>
+              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">
+                Plan: {profile.plan || "N/A"}
+              </span>
             </div>
           </div>
-        )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
 
         {/* Applications */}
-        <section className="bg-white rounded-lg shadow border mb-8">
-          <div className="p-4 border-b">
-            <h2 className="text-xl font-semibold text-gray-800">
-              Applications ({applications.length})
-            </h2>
-          </div>
-          <div className="divide-y divide-gray-200">
-            {applications.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No applications found</p>
-            ) : (
-              applications.map(app => (
-                <div key={app.id} className="p-4 hover:bg-gray-50 rounded">
-                  <div className="flex items-start space-x-4">
-                    <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
-                      <span className="text-gray-600 uppercase">
-                        {app.user_email.charAt(0)}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between">
-                        <div>
-                          <p className="font-medium text-gray-800">{app.full_name || app.user_email}</p>
-                          <p className="text-gray-500 text-sm">{app.job_title}</p>
-                        </div>
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          app.status === "Approved"
-                            ? "bg-green-100 text-green-800"
-                            : app.status === "Submitted"
-                            ? "bg-[#ea9f6f]-100 text-[#ea9f6f]-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}>
-                          {app.status}
-                        </span>
-                      </div>
-                      <p className="text-gray-600 text-sm mt-1">
-                        Applied on {new Date(app.application_date).toLocaleDateString()}
-                      </p>
-                      {app.cover_letter && (
-                        <p className="text-gray-700 text-sm mt-2 whitespace-pre-wrap">
-                          {app.cover_letter}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+       <section className="bg-white rounded-lg shadow border mb-8">
+  <div className="p-4 border-b">
+    <h2 className="text-xl font-semibold text-gray-800">
+      Applications ({applications.length})
+    </h2>
+  </div>
+  <div className="divide-y divide-gray-200">
+    {applications.length === 0 ? (
+      <p className="text-gray-500 text-center py-4">No applications found</p>
+    ) : (
+      applications.map(app => (
+        <div key={app.id} className="p-4 hover:bg-gray-50 rounded">
+          <div className="flex items-start space-x-4">
+            <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
+              <span className="text-gray-600 font-semibold uppercase">
+                {app.full_name ? app.full_name.charAt(0) : app.user_email.charAt(0)}
+              </span>
+            </div>
+            <div className="flex-1">
+              <div className="flex justify-between flex-wrap gap-2">
+                <div>
+                  <p className="font-semibold text-gray-800">{app.full_name || "No name"}</p>
+                  <p className="text-gray-600 text-sm">{app.user_email}</p>
+                  <p className="text-gray-500 text-sm">Applied for: <span className="font-medium text-gray-700">{app.job_title}</span></p>
                 </div>
-              ))
-            )}
+                <span className={`text-xs px-2 py-1 rounded h-fit font-medium ${
+                  app.status === "Approved"
+                    ? "bg-green-100 text-green-800"
+                    : app.status === "Submitted"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-gray-100 text-gray-800"
+                }`}>
+                  {app.status}
+                </span>
+              </div>
+              <p className="text-gray-500 text-sm mt-1">
+                Applied on: {new Date(app.application_date).toLocaleDateString()}
+              </p>
+
+              {app.cover_letter && (
+                <div className="mt-2">
+                  <p className="text-gray-600 font-medium text-sm">Cover Letter:</p>
+                  <p className="text-gray-700 text-sm mt-1 whitespace-pre-wrap line-clamp-4">
+                    {app.cover_letter}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </section>
+        </div>
+      ))
+    )}
+  </div>
+</section>
+
 
         {/* Profiles */}
         <section className="bg-white rounded-lg shadow border mb-8">
