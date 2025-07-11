@@ -40,25 +40,21 @@ function RemoteJobSelector() {
     jobOptions.forEach((_, index) => {
       setTimeout(() => {
         setVisibleCards((prev) => [...prev, index]);
-      }, index * 1000);
+      }, index * 300);
     });
   }, []);
 
-  useEffect(() => {
-    console.log("Form Data:", formData);
-  }, [formData]);
-
   const handleJobSelect = (title) => {
     setFormData({ ...formData, remote_type: title });
-    setShowOtherInput(false); // hide "Other" input
+    setShowOtherInput(false); // Hide "Other" input
   };
 
   return (
-    <div className="flex flex-col items-center p-6 pb-32 min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white mt-14 rounded-[20px]">
-      <h1 className="text-2xl font-bold mb-2 mt-14 text-center">
+    <div className="flex flex-col items-center p-6 pb-32 min-h-screen bg-gradient-to-b from-white via-yellow-100 to-yellow-200 text-[#333] mt-14">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-2 mt-10 text-[#ea9f6f] text-center">
         What type of remote jobs are you looking for?
       </h1>
-      <p className="mb-6 text-center">I'm looking for...</p>
+      <p className="mb-6 text-center text-gray-600">I'm looking for...</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-7xl">
         {jobOptions.map((job, index) => {
@@ -68,17 +64,18 @@ function RemoteJobSelector() {
             <div
               key={job.id}
               onClick={() => handleJobSelect(job.title)}
-              className={`group cursor-pointer p-6 rounded-lg border shadow-md transition-all duration-500
-                ${isSelected ? "bg-green-100 border-green-500" : "bg-white text-black"}
-                hover:scale-105 hover:bg-neutral-200 hover:shadow-2xl hover:shadow-neutral-500
-                ${visibleCards.includes(index) ? "animate-fade-down" : "opacity-0"}`}
+              className={`group cursor-pointer p-6 rounded-xl border transition-all duration-500
+                ${isSelected
+                  ? "bg-[#ea9f6f] text-white border-[#ea9f6f]"
+                  : "bg-white text-black border-gray-200"}
+                hover:scale-105 hover:shadow-2xl
+                ${visibleCards.includes(index) ? "opacity-100" : "opacity-0"}`}
               style={{
-                animationDelay: `${index * 200}ms`,
-                animationFillMode: "forwards",
+                transitionDelay: `${index * 150}ms`,
               }}
             >
               <div className="text-4xl mb-4 text-center">{job.icon}</div>
-              <p className="text-center font-medium">{job.title}</p>
+              <p className="text-center font-semibold">{job.title}</p>
               <div
                 className={`overflow-hidden max-h-0 opacity-0 
                   group-hover:max-h-40 group-hover:opacity-100 group-hover:mt-4 
@@ -93,7 +90,7 @@ function RemoteJobSelector() {
 
       {!showOtherInput && (
         <p
-          className="text-blue-400 mt-14 font-bold cursor-pointer"
+          className="text-[#ea9f6f] mt-14 font-bold cursor-pointer hover:underline"
           onClick={() => {
             setShowOtherInput(true);
             setFormData({ ...formData, job_type: "" });
@@ -107,7 +104,7 @@ function RemoteJobSelector() {
         <input
           type="text"
           placeholder="How would you describe what you're looking for?"
-          className="border border-gray-400 rounded px-4 py-2 mt-14 w-full max-w-xl text-black"
+          className="border border-[#ea9f6f] bg-white rounded px-4 py-2 mt-6 w-full max-w-xl text-black focus:ring-2 focus:ring-[#ea9f6f]"
           value={formData.job_type}
           onChange={(e) =>
             setFormData({ ...formData, job_type: e.target.value })

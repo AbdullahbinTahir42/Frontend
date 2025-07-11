@@ -7,8 +7,10 @@ import {
 } from "react-router-dom";
 import "./App.css";
 
+// ✅ Component imports
 import Navbar from "./components/Navbar";
-import HowItWorks from "./index";
+import HeroSection from "./index"; // ✅ Correct path to HeroSection
+import HowItWorks from "./Hero";         // This is now the 2nd page
 import Resume from "./Resume";
 import RemoteJobSelector from "./Remote";
 import JobSearchDropdown from "./JobSearch";
@@ -30,10 +32,10 @@ import JobListings from "./jobs";
 import AdminPanel from "./Admin";
 import PaymentForm from "./payment";
 
-// ✅ Import your Form Provider
+// ✅ Form Context Provider
 import { FormProvider } from "./Formcontext";
 
-// 👇 Protected route wrapper
+// ✅ Protected Route Wrapper
 function ProtectedRoute({ children }) {
   const navigate = useNavigate();
 
@@ -81,11 +83,18 @@ function App() {
     <Router>
       <FormProvider>
         <Navbar />
+
         <div className="px-4 py-2 bg-gray-100">
           <p className="text-gray-700">{message}</p>
         </div>
+
         <Routes>
-          <Route path="/" element={<HowItWorks />} />
+          {/* ✅ Homepage now shows HeroSection */}
+          <Route path="/" element={<HeroSection />} />
+
+          {/* ✅ HowItWorks moved to /how-it-works */}
+          <Route path="/how-it-works" element={<HowItWorks />} />
+
           <Route
             path="/resume"
             element={
@@ -114,7 +123,6 @@ function App() {
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/payment/form" element={<PaymentForm />} />
         </Routes>
-
       </FormProvider>
     </Router>
   );

@@ -11,7 +11,7 @@ function JobSearchDropdown() {
 
   const { formData, setFormData } = useFormData();
 
-  // ✅ Prefill role from localStorage if found
+  // ✅ Prefill from resume analysis
   useEffect(() => {
     const stored = localStorage.getItem("resume_analysis");
     if (stored) {
@@ -29,16 +29,15 @@ function JobSearchDropdown() {
     }
   }, []);
 
-  // ✅ Fade-in effect
   useEffect(() => {
     const timer = setTimeout(() => setFadeIn(true), 300);
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="flex flex-col items-center min-h-screen pb-32 pt-28 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-[20px] mt-14">
+    <div className="flex flex-col items-center min-h-screen pt-28 pb-32 bg-gradient-to-b from-white via-yellow-100 to-yellow-300 text-[#333] mt-14 rounded-[20px] px-4">
       <h2
-        className={`text-3xl sm:text-4xl font-bold mb-4 text-center transition-all duration-700 ${
+        className={`text-3xl sm:text-4xl font-bold mb-4 text-center text-[#ea9f6f] transition-all duration-700 ${
           fadeIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
         }`}
       >
@@ -53,7 +52,7 @@ function JobSearchDropdown() {
         <input
           type="text"
           placeholder="Type your job title"
-          className="w-full px-4 py-3 rounded border border-blue-400 text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-3 rounded-md border border-[#ea9f6f] text-black focus:outline-none focus:ring-2 focus:ring-[#ea9f6f]"
           value={search}
           onChange={(e) => {
             const value = e.target.value;
@@ -64,7 +63,9 @@ function JobSearchDropdown() {
         />
 
         {roleDetected && (
-          <p className="text-green-400 text-sm mt-1">We got this from your resume</p>
+          <p className="text-green-600 text-sm mt-1 font-medium">
+            ✅ This was auto-detected from your resume.
+          </p>
         )}
       </div>
 
@@ -73,7 +74,7 @@ function JobSearchDropdown() {
           setFormData({ ...formData, job_title: "" });
           navigate("/Category");
         }}
-        className={`text-blue-400 font-bold cursor-pointer hover:underline mt-10 transition-opacity duration-700 ${
+        className={`text-[#ea9f6f] font-bold cursor-pointer hover:underline mt-10 transition-opacity duration-700 ${
           fadeIn ? "opacity-100" : "opacity-0"
         }`}
       >

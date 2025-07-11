@@ -1,5 +1,5 @@
 import React from 'react';
-import remotelogo from '../assets/remote logo.png'; // adjust the path based on your file location
+import remotelogo from '../assets/GOOnline.jpg'; // adjust the path based on your file location
 
 const Navbar = () => {
   return (
@@ -8,9 +8,9 @@ const Navbar = () => {
         <img
           src={remotelogo}
           alt="Logo"
-          className="w-10 h-10 mr-3"
+          className="w-20 h-20 mr-3"
         />
-        <h1 className="text-2xl font-bold text-[#1a144f]">remotejobs.io</h1>
+        <h1 className="text-2xl font-bold text-[#fe9350]">go.Online</h1>
       </div>
       <hr className="border-t-4 border-[#1a144f] w-full" />
     </div>

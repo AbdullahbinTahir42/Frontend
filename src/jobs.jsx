@@ -22,9 +22,7 @@ const JobListings = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        if (!response.ok) {
-          throw new Error('Login to view jobs');
-        }
+        if (!response.ok) throw new Error('Login to view jobs');
         const data = await response.json();
         setJobs(data);
       } catch (err) {
@@ -33,7 +31,6 @@ const JobListings = () => {
         setLoading(false);
       }
     };
-
     fetchJobs();
   }, []);
 
@@ -49,13 +46,9 @@ const JobListings = () => {
         body: JSON.stringify({ job_id: jobId }),
       });
 
-      if (!response.ok) {
-        throw new Error("You have already applied to this job.");
-      }
-
+      if (!response.ok) throw new Error("You have already applied to this job.");
       alert("Application submitted!");
     } catch (error) {
-      console.error("Application Error:", error.message);
       alert("Error: " + error.message);
     }
   };
@@ -72,30 +65,28 @@ const JobListings = () => {
     return matchesSearch && matchesMode && matchesLocation && matchesExperience;
   });
 
-  const handleJobClick = (jobId) => {
-    navigate(`/jobs/${jobId}`);
-  };
+  const handleJobClick = (jobId) => navigate(`/jobs/${jobId}`);
 
-  if (loading) return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#ea9f6f]"></div>
+      </div>
+    );
+  }
 
-  if (error) return (
-    <div className="text-red-500 text-center p-8">
-      Error: {error}
-    </div>
-  );
+  if (error) {
+    return <div className="text-red-500 text-center p-8">Error: {error}</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-white via-yellow-100 to-yellow-200 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
+          <h1 className="text-4xl font-extrabold text-[#ea9f6f] mt-10 sm:text-5xl sm:tracking-tight lg:text-6xl">
             Find Your Dream Job
           </h1>
-          <p className="mt-5 max-w-xl mx-auto text-xl text-gray-500">
+          <p className="mt-5 max-w-xl mx-auto text-xl text-gray-600">
             Browse through our latest job openings
           </p>
         </div>
@@ -104,31 +95,29 @@ const JobListings = () => {
         <div className="space-y-6">
           {filteredJobs.length > 0 ? (
             filteredJobs.map((job) => (
-              <div 
-                key={job.id} 
-                className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer border-l-4 border-blue-500"
+              <div
+                key={job.id}
                 onClick={() => handleJobClick(job.id)}
+                className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 cursor-pointer border-l-4 border-[#ea9f6f]"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between">
                   <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-blue-600 font-bold text-lg">
-                          {job.title.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+                    <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
+                      <span className="text-[#ea9f6f] font-bold text-lg">
+                        {job.title.charAt(0).toUpperCase()}
+                      </span>
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-gray-900">{job.title}</h2>
                       <p className="text-gray-600">{job.mode} • {job.location}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {job.experience && (
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                             {job.experience}
                           </span>
                         )}
                         {job.salary && (
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                             ${job.salary.toLocaleString()}/yr
                           </span>
                         )}
@@ -144,7 +133,7 @@ const JobListings = () => {
                         e.stopPropagation();
                         applyToJob(job.id);
                       }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                      className="px-4 py-2 bg-[#ea9f6f] text-white rounded-lg hover:bg-orange-500 transition duration-300"
                     >
                       Apply Now
                     </button>

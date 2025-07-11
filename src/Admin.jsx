@@ -1,26 +1,15 @@
-// ✅ Updated AdminPanel using Profile objects instead of Users
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 export default function AdminPanel() {
-  const [stats, setStats] = useState({
-    users: 0,
-    jobs: 0,
-    applications: 0,
-    profiles: 0,
-  });
-  const [profiles, setProfiles] = useState([]); // Renamed from users
+  const [stats, setStats] = useState({ users: 0, jobs: 0, applications: 0, profiles: 0 });
+  const [profiles, setProfiles] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
+  const [verifyingProfiles, setVerifyingProfiles] = useState([]);
   const [newJob, setNewJob] = useState({
-    title: "",
-    location: "",
-    company: "",
-    description: "",
-    salary: "",
-    type: "Full-time",
-    experience: "Mid-level",
+    title: "", location: "", company: "", description: "",
+    salary: "", type: "Full-time", experience: "Mid-level"
   });
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
@@ -31,492 +20,359 @@ export default function AdminPanel() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsRes, profilesRes, jobsRes, applicationsRes] =
-          await Promise.all([
-            axios.get(`${API_URL}/admin/stats`),
-            axios.get(`${API_URL}/admin/profiles`),
-            axios.get(`${API_URL}/admin/jobs`),
-            axios.get(`${API_URL}/admin/applications`),
-          ]);
+        const [
+          statsRes, profilesRes, jobsRes, applicationsRes, verifyingPaymentsRes
+        ] = await Promise.all([
+          axios.get(`${API_URL}/admin/stats`),
+          axios.get(`${API_URL}/admin/profiles`),
+          axios.get(`${API_URL}/admin/jobs`),
+          axios.get(`${API_URL}/admin/applications`),
+          axios.get(`${API_URL}/admin/payments/users`)
+        ]);
 
         setStats(statsRes.data);
         setProfiles(profilesRes.data);
         setJobs(jobsRes.data);
         setApplications(applicationsRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        setVerifyingProfiles(verifyingPaymentsRes.data);
+      } catch (err) {
+        console.error(err);
         showNotification("Failed to load data", "error");
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
+  const showNotification = (msg, type = "success") => {
+    setNotification({ message: msg, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
   const handleMarkPayment = async (profileId) => {
-    if (!window.confirm("Are you sure you want to mark this payment as done?"))
-      return;
-
+    if (!window.confirm("Mark this payment as done?")) return;
     try {
-      await axios.post(
-        `${API_URL}/admin/payment/done`,
-        { profile_id: profileId },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      setProfiles((prev) =>
-        prev.map((p) =>
-          p.id === profileId ? { ...p, payment_status: "Paid" } : p
-        )
-      );
-
-      showNotification("Payment marked as completed!");
-    } catch (error) {
-      console.error("Error marking payment:", error);
-      showNotification(
-        "Failed to mark payment: " +
-          (error.response?.data?.detail || "Unknown error"),
-        "error"
-      );
+      await axios.post(`${API_URL}/admin/payment/done`, { profile_id: profileId }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setProfiles((p) => p.map(u => u.id === profileId ? { ...u, payment_status: "Paid" } : u));
+      showNotification("Payment marked done");
+    } catch (err) {
+      console.error(err);
+      showNotification("Unable to mark payment", "error");
     }
   };
 
   const handleAddJob = async (e) => {
     e.preventDefault();
     try {
-      const jobData = {
+      const res = await axios.post(`${API_URL}/admin/jobs`, {
         ...newJob,
-        salary: newJob.salary || null,
-
-      };
-      const response = await axios.post(`${API_URL}/admin/jobs`, jobData);
-      setJobs([...jobs, response.data]);
-      setNewJob({
-        title: "",
-        location: "",
-        company: "",
-        description: "",
-        salary: "",
-        type: "Full-time",
-        experience: "Mid-level",
+        salary: newJob.salary || null
       });
+      setJobs([...jobs, res.data]);
       setShowJobForm(false);
-      showNotification("Job added successfully!");
-    } catch (error) {
-      console.error("Error adding job:", error);
-      const errorMsg = error.response?.data?.detail;
-      if (Array.isArray(errorMsg)) {
-        const messages = errorMsg
-          .map((err) => `${err.loc[1]}: ${err.msg}`)
-          .join("\n");
-        showNotification(messages, "error");
-      } else {
-        showNotification("Failed to add job", "error");
-      }
+      setNewJob({
+        title: "", location: "", company: "", description: "",
+        salary: "", type: "Full-time", experience: "Mid-level"
+      });
+      showNotification("Job added successfully");
+    } catch (err) {
+      console.error(err);
+      showNotification("Failed to add job", "error");
     }
   };
 
-  const handleDeleteJob = async (jobId) => {
-    if (!window.confirm("Are you sure you want to delete this job?")) return;
-
+  const handleDeleteJob = async (id) => {
+    if (!window.confirm("Delete this job?")) return;
     try {
-      await axios.delete(`${API_URL}/admin/jobs/${jobId}`);
-      setJobs(jobs.filter((job) => job.id !== jobId));
-      showNotification("Job deleted successfully!");
-    } catch (error) {
-      console.error("Error deleting job:", error);
+      await axios.delete(`${API_URL}/admin/jobs/${id}`);
+      setJobs(jobs.filter(j => j.id !== id));
+      showNotification("Job deleted");
+    } catch (err) {
+      console.error(err);
       showNotification("Failed to delete job", "error");
     }
   };
 
-  const showNotification = (message, type = "success") => {
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-white via-yellow-100 to-yellow-200">
+        <div className="animate-spin h-12 w-12 border-4 border-[#ea9f6f] border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-white via-yellow-100 to-yellow-200 p-6">
       {notification && (
-        <div
-          className={`fixed top-4 right-4 p-4 rounded-md shadow-md z-50 ${
-            notification.type === "error"
-              ? "bg-red-100 text-red-800"
-              : "bg-green-100 text-green-800"
-          }`}
-        >
+        <div className={`fixed top-4 right-4 p-4 rounded shadow z-50 ${
+          notification.type === "error" ? "bg-red-200 text-red-800" : "bg-green-200 text-green-800"
+        }`}>
           {notification.message}
         </div>
       )}
 
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">
+        <h1 className="text-center text-3xl font-bold mt-10 text-[#ea9f6f] mb-8">
           Admin Dashboard
         </h1>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          {[
-            { key: "users", label: "USERS", value: stats.users },
-            { key: "jobs", label: "JOBS", value: stats.jobs },
-            {
-              key: "applications",
-              label: "APPLICATIONS",
-              value: stats.applications,
-            },
-            { key: "profiles", label: "PROFILES", value: stats.profiles },
-          ].map((stat) => (
-            <div
-              key={stat.key}
-              className="bg-white p-6 rounded-lg shadow border border-gray-200"
-            >
-              <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
-              <p className="text-3xl font-bold text-blue-600">{stat.value}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {Object.entries(stats).map(([key, val]) => (
+            <div key={key} className="bg-white p-6 rounded-lg shadow border border-gray-200">
+              <p className="text-gray-600 font-medium uppercase">{key}</p>
+              <p className="text-3xl font-extrabold text-[#ea9f6f]">{val}</p>
             </div>
           ))}
         </div>
 
-        {/* Applications Section */}
-        <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
-          <div className="p-4 border-b border-gray-200">
+        {/* Payments */}
+        {verifyingProfiles.length > 0 && (
+          <div className="bg-white rounded-lg shadow border mb-8">
+            <div className="p-4 border-b">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Payment Verification ({verifyingProfiles.length})
+              </h2>
+            </div>
+            <div className="divide-y divide-gray-200">
+              {verifyingProfiles.map(u => (
+                <div key={u.id} className="p-4 flex justify-between items-center">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
+                      <span className="text-gray-600">{u.full_name?.charAt(0)}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-800">{u.full_name}</p>
+                      <p className="text-gray-500 text-sm">{u.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    {u.payment && (
+                      <a href={`${API_URL}/admin/payment/receipt/${u.payment.id}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="bg-[#ea9f6f] text-white px-3 py-1 rounded text-xs hover:bg-orange-500">
+                        View Receipt
+                      </a>
+                    )}
+                    {u.payment && u.payment_status !== "Paid" && (
+                      <button onClick={() => handleMarkPayment(u.id)}
+                        className="bg-[#ea9f6f] text-white px-3 py-1 rounded text-xs hover:bg-orange-500">
+                        Verify Payment
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Applications */}
+        <section className="bg-white rounded-lg shadow border mb-8">
+          <div className="p-4 border-b">
             <h2 className="text-xl font-semibold text-gray-800">
               Applications ({applications.length})
             </h2>
           </div>
           <div className="divide-y divide-gray-200">
             {applications.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">
-                No applications found
-              </p>
+              <p className="text-gray-500 text-center py-4">No applications found</p>
             ) : (
-              applications.map((application) => (
-                <div key={application.id} className="p-4 hover:bg-gray-50">
+              applications.map(app => (
+                <div key={app.id} className="p-4 hover:bg-gray-50 rounded">
                   <div className="flex items-start space-x-4">
-                    <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-gray-600 text-sm">
-                        {application.user_email.charAt(0).toUpperCase()}
+                    <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
+                      <span className="text-gray-600 uppercase">
+                        {app.user_email.charAt(0)}
                       </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-baseline sm:space-x-2">
-                        <p className="font-medium text-gray-800 truncate">
-                          {application.full_name ||
-                            application.user_email.split("@")[0]}
-                        </p>
-                        <p className="text-gray-500 text-sm">
-                          {application.user_email.toLowerCase()}
-                        </p>
-                      </div>
-
-                      <p className="mt-1 text-gray-700">
-                        Applied for{" "}
-                        <span className="font-medium">
-                          {application.job_title}
+                    <div className="flex-1">
+                      <div className="flex justify-between">
+                        <div>
+                          <p className="font-medium text-gray-800">{app.full_name || app.user_email}</p>
+                          <p className="text-gray-500 text-sm">{app.job_title}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          app.status === "Approved"
+                            ? "bg-green-100 text-green-800"
+                            : app.status === "Submitted"
+                            ? "bg-[#ea9f6f]-100 text-[#ea9f6f]-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}>
+                          {app.status}
                         </span>
+                      </div>
+                      <p className="text-gray-600 text-sm mt-1">
+                        Applied on {new Date(app.application_date).toLocaleDateString()}
                       </p>
-
-                      <div className="flex items-center space-x-2 mt-2">
-                        <span
-                          className={`text-xs px-2 py-1 rounded ${
-                            application.status === "Submitted"
-                              ? "bg-blue-100 text-blue-800"
-                              : application.status === "Approved"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {application.status}
-                        </span>
-                        <span className="text-gray-500 text-xs">
-                          {new Date(
-                            application.application_date
-                          ).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </div>
+                      {app.cover_letter && (
+                        <p className="text-gray-700 text-sm mt-2 whitespace-pre-wrap">
+                          {app.cover_letter}
+                        </p>
+                      )}
                     </div>
                   </div>
-
-                  {application.cover_letter && (
-                    <div className="mt-3 pl-14">
-                      <p className="text-gray-600 text-sm font-medium mb-1">
-                        Cover Letter:
-                      </p>
-                      <p className="text-gray-500 text-sm whitespace-pre-line">
-                        {application.cover_letter}
-                      </p>
-                    </div>
-                  )}
                 </div>
               ))
             )}
           </div>
-        </div>
+        </section>
 
         {/* Profiles */}
-        <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
-          <div className="p-4 border-b border-gray-200">
+        <section className="bg-white rounded-lg shadow border mb-8">
+          <div className="p-4 border-b flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-800">
               Profiles ({profiles.length})
             </h2>
           </div>
           <div className="divide-y divide-gray-200">
-            {profiles.map((profile) => (
-              <div key={profile.id} className="p-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
-                      <span className="text-gray-600 text-sm">
-                        {profile.full_name.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">
-                        {profile.full_name}
-                      </p>
-                      <p className="text-gray-600 text-sm">{profile.email}</p>
-                    </div>
+            {profiles.map(u => (
+              <div key={u.id} className="p-4 hover:bg-gray-50 flex justify-between items-center">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-gray-200 rounded-full w-10 h-10 flex items-center justify-center">
+                    <span className="text-gray-600">{u.full_name.charAt(0)}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {profile.payment_status === "Pending" && (
-                      <div className="bg-yellow-500 text-white px-3 py-1 rounded text-xs hover:bg-yellow-600"
-                     
-                         >
-                        Receipt Pending
-                      </div>
-                    )}
-
-                    {profile.payment_status === "Verifying" && (
-                      <>
-                        <button
-                          onClick={() => handleMarkPayment(profile.id)}
-                          className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
-                        >
-                          Verify Payment
-                        </button>
-                       
-                      </>
-                    )}
-
-                    {profile.payment_status === "Paid" && (
-                      <button className="bg-green-500 text-white px-3 py-1 rounded text-xs cursor-not-allowed">
-                        Payment Verified
-                      </button>
-                    )}
+                  <div>
+                    <p className="font-medium text-gray-800">{u.full_name}</p>
+                    <p className="text-gray-500 text-sm">{u.email}</p>
                   </div>
+                </div>
+                <div>
+                  {u.payment_status === "Pending" && (
+                    <div className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded text-xs">
+                      Receipt Pending
+                    </div>
+                  )}
+                  {u.payment_status === "Verifying" && (
+                    <button onClick={() => handleMarkPayment(u.id)}
+                      className="bg-[#ea9f6f] text-white px-3 py-1 rounded text-xs hover:bg-orange-500">
+                      Verify Payment
+                    </button>
+                  )}
+                  {u.payment_status === "Paid" && (
+                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded text-xs">
+                      Verified
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Jobs section */}
-        <div className="bg-white rounded-lg shadow border border-gray-200">
-          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+        {/* Jobs with Form */}
+        <section className="bg-white rounded-lg shadow border">
+          <div className="p-4 border-b flex justify-between items-center">
             <h2 className="text-xl font-semibold text-gray-800">
               Jobs ({jobs.length})
             </h2>
-            <button
-              onClick={() => setShowJobForm(!showJobForm)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
-            >
+            <button onClick={() => setShowJobForm(!showJobForm)}
+              className="bg-[#ea9f6f] text-white px-4 py-2 rounded hover:bg-orange-500 text-sm">
               {showJobForm ? "Cancel" : "Add Job"}
             </button>
           </div>
 
-          {/* Add Job Form */}
           {showJobForm && (
-            <div className="p-4 border-b border-gray-200">
-              <form onSubmit={handleAddJob} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Job Title*
-                    </label>
+            <form onSubmit={handleAddJob} className="p-4 border-b space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {["title","location","company"].map(field => (
+                  <div key={field}>
+                    <label className="text-sm font-medium text-gray-700">{field.charAt(0).toUpperCase()+field.slice(1)}*</label>
                     <input
-                      type="text"
-                      placeholder="Job Title"
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      value={newJob.title}
-                      onChange={(e) =>
-                        setNewJob({ ...newJob, title: e.target.value })
-                      }
                       required
+                      placeholder={field.charAt(0).toUpperCase()+field.slice(1)}
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-[#ea9f6f] focus:border-[#ea9f6f]"
+                      value={newJob[field]}
+                      onChange={e => setNewJob(prev => ({...prev, [field]: e.target.value}))}
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Location*
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Location"
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      value={newJob.location}
-                      onChange={(e) =>
-                        setNewJob({ ...newJob, location: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Company*
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Company"
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      value={newJob.company}
-                      onChange={(e) =>
-                        setNewJob({ ...newJob, company: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                </div>
+                ))}
+              </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Salary
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. $80,000 - $100,000"
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      value={newJob.salary}
-                      onChange={(e) =>
-                        setNewJob({ ...newJob, salary: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Job Type
-                    </label>
-                    <select
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      value={newJob.type}
-                      onChange={(e) =>
-                        setNewJob({ ...newJob, type: e.target.value })
-                      }
-                    >
-                      <option value="Full-time">Full-time</option>
-                      <option value="Part-time">Part-time</option>
-                      <option value="Contract">Contract</option>
-                      <option value="Internship">Internship</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Experience Level
-                    </label>
-                    <select
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      value={newJob.experience}
-                      onChange={(e) =>
-                        setNewJob({ ...newJob, experience: e.target.value })
-                      }
-                    >
-                      <option value="Entry-level">Entry-level</option>
-                      <option value="Mid-level">Mid-level</option>
-                      <option value="Senior-level">Senior-level</option>
-                    </select>
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    placeholder="Job Description"
-                    className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    rows="4"
-                    value={newJob.description}
-                    onChange={(e) =>
-                      setNewJob({ ...newJob, description: e.target.value })
-                    }
+                  <label className="text-sm font-medium text-gray-700">Salary</label>
+                  <input
+                    placeholder="e.g. $80,000"
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-[#ea9f6f] focus:border-[#ea9f6f]"
+                    value={newJob.salary}
+                    onChange={e => setNewJob(prev => ({...prev, salary: e.target.value}))}
                   />
                 </div>
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-                >
-                  Add Job
-                </button>
-              </form>
-            </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Job Type</label>
+                  <select
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-[#ea9f6f] focus:border-[#ea9f6f]"
+                    value={newJob.type}
+                    onChange={e => setNewJob(prev => ({...prev, type: e.target.value}))}
+                  >
+                    <option>Full-time</option>
+                    <option>Part-time</option>
+                    <option>Contract</option>
+                    <option>Internship</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Experience</label>
+                  <select
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-[#ea9f6f] focus:border-[#ea9f6f]"
+                    value={newJob.experience}
+                    onChange={e => setNewJob(prev => ({...prev, experience: e.target.value}))}
+                  >
+                    <option>Entry-level</option>
+                    <option>Mid-level</option>
+                    <option>Senior-level</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700">Description</label>
+                <textarea
+                  rows="4"
+                  placeholder="Job Description"
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-[#ea9f6f] focus:border-[#ea9f6f]"
+                  value={newJob.description}
+                  onChange={e => setNewJob(prev => ({...prev, description: e.target.value}))}
+                />
+              </div>
+
+              <button type="submit"
+                className="w-full bg-[#ea9f6f] text-white py-2 rounded hover:bg-orange-500">
+                Add Job
+              </button>
+            </form>
           )}
 
-          {/* Jobs List */}
-          <div className="p-4">
+          <div className="p-4 space-y-4">
             {jobs.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">
-                No jobs available
-              </p>
-            ) : (
-              jobs.map((job) => (
-                <div
-                  key={job.id}
-                  className="mb-4 last:mb-0 border-b border-gray-200 pb-4 last:border-b-0 hover:bg-gray-50 p-2 rounded"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="w-full">
-                      <div className="flex justify-between">
-                        <p className="font-medium text-gray-800">{job.title}</p>
-                        <button
-                          onClick={() => handleDeleteJob(job.id)}
-                          className="text-red-500 hover:text-red-700 text-sm bg-red-50 px-2 py-1 rounded"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                      <p className="text-gray-600 text-sm">
-                        {job.company} • {job.location}
-                      </p>
-                      {job.salary && (
-                        <p className="text-green-600 text-sm mt-1">
-                          {job.salary}
-                        </p>
-                      )}
-                      <div className="flex gap-2 mt-1">
-                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                          {job.type}
-                        </span>
-                        <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
-                          {job.experience}
-                        </span>
-                      </div>
-                      {job.description && (
-                        <p className="text-gray-500 text-sm mt-2">
-                          {job.description}
-                        </p>
-                      )}
+              <p className="text-gray-500 text-center py-4">No jobs available</p>
+            ) : jobs.map(job => (
+              <div key={job.id} className="border-b border-gray-200 pb-4 hover:bg-gray-50 p-2 rounded">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium text-gray-800">{job.title}</p>
+                    <p className="text-gray-600 text-sm">{job.company} • {job.location}</p>
+                    {job.salary && <p className="text-gray-700 text-sm mt-1">{job.salary}</p>}
+                    <div className="mt-1 flex space-x-2">
+                      <span className="bg-yellow-100 text-[#ea9f6f] text-xs px-2 py-1 rounded">{job.type}</span>
+                      <span className="bg-yellow-100 text-[#ea9f6f] text-xs px-2 py-1 rounded">{job.experience}</span>
                     </div>
+                    {job.description && <p className="text-gray-600 text-sm mt-2">{job.description}</p>}
                   </div>
+                  <button
+                    onClick={() => handleDeleteJob(job.id)}
+                    className="text-red-500 hover:text-red-700 text-sm bg-red-50 px-2 py-1 rounded">
+                    Delete
+                  </button>
                 </div>
-              ))
-            )}
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

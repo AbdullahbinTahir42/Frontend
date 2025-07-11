@@ -1,12 +1,16 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function PaymentForm() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     method: "",
     receipt: null,
     termsAccepted: false,
+    plan: "", // ✅ NEW field added for Plan selection
   });
 
   const handleChange = (e) => {
@@ -24,43 +28,47 @@ export default function PaymentForm() {
     setFormData({ ...formData, method });
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (!formData.termsAccepted) {
-    alert("You must accept the terms and conditions.");
-    return;
-  }
-
-  const payload = new FormData();
-  payload.append("name", formData.name);
-  payload.append("email", formData.email);
-  payload.append("method", formData.method);
-  payload.append("termsAccepted", formData.termsAccepted);
-  payload.append("receipt", formData.receipt);
-
-  try {
-    const res = await fetch("http://localhost:8000/payment/submit", {
-      method: "POST",
-      body: payload,
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      alert(data.detail || "Payment submission failed");
+    if (!formData.termsAccepted) {
+      alert("You must accept the terms and conditions.");
       return;
     }
 
-    const data = await res.json();
-    alert("Payment submitted successfully!");
-    navigate("/profile"); // redirect after successful payment
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong.");
-  }
-};
+    if (!formData.plan) {
+      alert("Please select a plan.");
+      return;
+    }
 
+    const payload = new FormData();
+    payload.append("name", formData.name);
+    payload.append("email", formData.email);
+    payload.append("method", formData.method);
+    payload.append("plan", formData.plan); // ✅ NEW field added
+    payload.append("termsAccepted", formData.termsAccepted);
+    payload.append("receipt", formData.receipt);
 
+    try {
+      const res = await fetch("http://localhost:8000/payment/submit", {
+        method: "POST",
+        body: payload,
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.detail || "Payment submission failed");
+        return;
+      }
+
+      const data = await res.json();
+      alert("Payment submitted successfully!");
+      navigate("/profile");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-yellow-300 flex items-center justify-center px-4">
@@ -69,9 +77,8 @@ export default function PaymentForm() {
         className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-md w-full max-w-sm"
       >
         {/* Logo */}
-        <div className="mb-4 text-center">
-          <span className="text-2xl font-bold text-orange-600">go</span>
-          <span className="text-xl font-semibold text-black">Online</span>
+        <div className="mb-4 text-center mt-9">
+          <span className="text-2xl font-bold text-orange-600">go.Online</span>
         </div>
 
         {/* Heading */}
@@ -96,6 +103,27 @@ export default function PaymentForm() {
           onChange={handleChange}
           className="w-full px-4 py-2 mb-4 rounded-md border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300"
         />
+
+        {/* ✅ Plan Selection */}
+        <select
+          name="plan"
+          value={formData.plan}
+          onChange={handleChange}
+          className="w-full px-4 py-2 mb-4 rounded-md border border-orange-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+        >
+          <option value="">Select a Plan</option>
+          <option value="Plan A">Plan A (Featured Plan)</option>
+          <option value="Plan B">Plan B (14-Day Full Access)</option>
+        </select>
+
+        {/* ✅ Payment Instruction */}
+        <div className="bg-white text-orange-600 text-sm p-3 rounded-md mb-4 border border-orange-300 shadow">
+          Please make your payment to this number:
+          <br />
+          <strong className="text-lg text-[#ea9f6f]">+92 3064257447</strong>
+               <p>Danial Manzoor
+</p>
+        </div>
 
         {/* Payment Method Buttons */}
         <div className="grid grid-cols-2 gap-2 mb-4">
@@ -140,7 +168,16 @@ export default function PaymentForm() {
           type="submit"
           className="w-full py-2 rounded-md bg-orange-500 text-white hover:bg-orange-600 transition"
         >
-          Submit
+          Submit Payment
+        </button>
+
+        {/* Go to Profile (Optional Navigation) */}
+        <button
+          type="button"
+          onClick={() => navigate("/JobGeneration")}
+          className="w-full mt-3 py-2 rounded-md bg-orange-200 text-orange-700 hover:bg-orange-300 transition"
+        >
+          Skip to Profile Page
         </button>
       </form>
     </div>

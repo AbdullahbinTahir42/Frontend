@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import {
   FiUser,
   FiMail,
@@ -8,28 +7,36 @@ import {
   FiBriefcase,
   FiCode,
   FiDollarSign,
-  FiMapPin,
   FiCheckCircle,
 } from "react-icons/fi";
 
 function ProfileCard({ icon, title, items }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-center mb-4">
-        <div className="bg-indigo-50 p-2 rounded-lg mr-3">{icon}</div>
-        <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow hover:shadow-md transition-shadow">
+      <div className="flex items-center mb-5 pb-2 border-b border-yellow-200">
+        <div className="bg-yellow-100 p-2 rounded-lg mr-3 text-[#ea9f6f]">
+          {icon}
+        </div>
+        <h3 className="text-2xl font-bold text-[#ea9f6f] tracking-wide">
+          {title}
+        </h3>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-5">
         {items.map((item, index) => (
           <div key={index}>
-            <p className="text-md text-gray-600 font-medium">{item.label}</p>
-            <p className="text-gray-900 font-semibold">{item.value}</p>
+            <p className="text-sm text-gray-500 font-semibold uppercase tracking-wide">
+              {item.label}
+            </p>
+            <p className="text-lg text-gray-800 font-semibold mt-1">
+              {item.value}
+            </p>
           </div>
         ))}
       </div>
     </div>
   );
 }
+
 
 export default function Profile() {
   const [profile, setProfile] = useState(null);
@@ -47,9 +54,7 @@ export default function Profile() {
       },
     })
       .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch profile details");
-        }
+        if (!res.ok) throw new Error("Failed to fetch profile details");
         return res.json();
       })
       .then((data) => {
@@ -67,9 +72,9 @@ export default function Profile() {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-16 h-16 bg-indigo-200 rounded-full mb-4"></div>
-          <div className="h-4 bg-indigo-200 rounded w-3/4 mb-2"></div>
-          <div className="h-4 bg-indigo-200 rounded w-1/2"></div>
+          <div className="w-16 h-16 bg-yellow-300 rounded-full mb-4"></div>
+          <div className="h-4 bg-yellow-300 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-yellow-300 rounded w-1/2"></div>
         </div>
       </div>
     );
@@ -77,41 +82,24 @@ export default function Profile() {
   if (error)
     return (
       <div className="max-w-md mx-auto bg-red-50 border-l-4 border-red-500 p-4 mt-20">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg
-              className="h-5 w-5 text-red-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <p className="text-md font-medium text-red-700">{error}</p>
-          </div>
-        </div>
+        <p className="text-md font-medium text-red-700">{error}</p>
       </div>
     );
 
   if (!profile) return null;
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8 mt-16">
+    <main className="max-w-4xl mx-auto px-4 py-8 mt-16 bg-gradient-to-b from-white via-yellow-100 to-yellow-200 rounded-[20px] shadow-lg">
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Profile Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 p-6 text-white">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#ea9f6f] to-yellow-400 p-6 text-white rounded-t-xl">
           <div className="flex items-center">
-            <div className="bg-white/20 backdrop-blur-md rounded-full p-3 mr-4">
+            <div className="bg-white/30 backdrop-blur-md rounded-full p-3 mr-4">
               <FiUser className="text-2xl" />
             </div>
             <div>
               <h1 className="text-3xl font-bold">{profile.full_name}</h1>
-              <p className="text-indigo-100 text-xl">
+              <p className="text-white/90 text-xl">
                 {(profile.job_title || "Your Professional Title")
                   .split(" ")
                   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -121,12 +109,11 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Profile Content */}
+        {/* Profile Cards */}
         <div className="grid md:grid-cols-2 gap-6 p-6">
-          {/* Left Column */}
           <div className="space-y-6">
             <ProfileCard
-              icon={<FiMail className="text-indigo-500 text-xl" />}
+              icon={<FiMail className="text-[#ea9f6f] text-xl" />}
               title="Contact Details"
               items={[
                 { label: "Email Address", value: profile.email },
@@ -138,7 +125,7 @@ export default function Profile() {
             />
 
             <ProfileCard
-              icon={<FiBriefcase className="text-indigo-500 text-xl" />}
+              icon={<FiBriefcase className="text-[#ea9f6f] text-xl" />}
               title="Professional Information"
               items={[
                 {
@@ -157,7 +144,7 @@ export default function Profile() {
             />
 
             <ProfileCard
-              icon={<FiDollarSign className="text-indigo-500 text-xl" />}
+              icon={<FiDollarSign className="text-[#ea9f6f] text-xl" />}
               title="Salary & Benefits"
               items={[
                 {
@@ -173,21 +160,8 @@ export default function Profile() {
                       {profile.benefits.split(",").map((benefit, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
+                          className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-[#ea9f6f]"
                         >
-                          <svg
-                            className="h-4 w-4 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
                           {benefit.trim()}
                         </span>
                       ))}
@@ -200,10 +174,9 @@ export default function Profile() {
             />
           </div>
 
-          {/* Right Column */}
           <div className="space-y-6">
             <ProfileCard
-              icon={<FiFileText className="text-indigo-500 text-xl" />}
+              icon={<FiFileText className="text-[#ea9f6f] text-xl" />}
               title="Career Documents"
               items={[
                 {
@@ -211,7 +184,7 @@ export default function Profile() {
                   value: profile.resume_filename ? (
                     <a
                       href="#"
-                      className="text-indigo-600 hover:underline font-medium"
+                      className="text-[#ea9f6f] hover:underline font-medium"
                     >
                       Download My Resume
                     </a>
@@ -223,7 +196,7 @@ export default function Profile() {
             />
 
             <ProfileCard
-              icon={<FiCode className="text-indigo-500 text-xl" />}
+              icon={<FiCode className="text-[#ea9f6f] text-xl" />}
               title="Technical Expertise"
               items={[
                 {
@@ -233,7 +206,7 @@ export default function Profile() {
                       {profile.skills.split(",").map((skill, index) => (
                         <span
                           key={index}
-                          className="bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full"
+                          className="bg-yellow-100 text-[#ea9f6f] text-sm font-medium px-3 py-1 rounded-full"
                         >
                           {skill.trim()}
                         </span>
@@ -247,7 +220,7 @@ export default function Profile() {
             />
 
             <ProfileCard
-              icon={<FiCheckCircle className="text-indigo-500 text-xl" />}
+              icon={<FiCheckCircle className="text-[#ea9f6f] text-xl" />}
               title="Account Information"
               items={[
                 {
@@ -281,12 +254,6 @@ export default function Profile() {
                         <span className="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
                           Pending
                         </span>
-                        <button
-                          onClick={() => navigate("/payment/form")}
-                          className="px-3 py-1 text-sm font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
-                        >
-                          Pay Now
-                        </button>
                       </div>
                     );
                   })(),
@@ -296,21 +263,23 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        {profile.payment_status?.toLowerCase() === "paid" ? (
-          <button
-            onClick={() => navigate("/jobs")}
-            className="px-5 py-2 bg-indigo-600 rounded-lg text-md font-semibold text-white hover:bg-indigo-700"
-          >
-            See Jobs Related to My Skills
-          </button>
-        ) : (
-          <p className="text-red-600 font-semibold text-md">
-            {profile.payment_status?.toLowerCase() === "verifying"
-              ? "Your payment is under verification. You can access jobs after admin approval."
-              : "Clear your payment to access jobs"}
-          </p>
-        )}
+        {/* Action */}
+        <div className="p-6 text-center">
+          {profile.payment_status?.toLowerCase() === "paid" ? (
+            <button
+              onClick={() => navigate("/jobs")}
+              className="px-5 py-2 bg-[#ea9f6f] rounded-lg text-md font-semibold text-white hover:bg-orange-400 transition"
+            >
+              See Jobs Related to My Skills
+            </button>
+          ) : (
+            <p className="text-red-600 font-semibold text-md">
+              {profile.payment_status?.toLowerCase() === "verifying"
+                ? "Your payment is under verification. You can access jobs after admin approval."
+                : "Clear your payment to access jobs"}
+            </p>
+          )}
+        </div>
       </div>
     </main>
   );

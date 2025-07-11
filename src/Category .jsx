@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import Footer from './Footer';
-import { useFormData } from './Formcontext'; // ✅ Import context
+import { useFormData } from './Formcontext';
 
 const categories = [
   "Accounting", "Administrative Assistant", "Analyst", "Bookkeeping",
@@ -19,7 +19,7 @@ export default function JobCategorySelector() {
   const [showAll, setShowAll] = useState(false);
   const [selected, setSelected] = useState([]);
   const [visible, setVisible] = useState(false);
-  const { formData, setFormData } = useFormData(); // ✅ Access form context
+  const { formData, setFormData } = useFormData();
   const navigate = useNavigate();
 
   const visibleCategories = showAll ? categories : categories.slice(0, 14);
@@ -30,7 +30,6 @@ export default function JobCategorySelector() {
   }, []);
 
   useEffect(() => {
-    // ✅ Sync selected categories to context on change
     setFormData({ ...formData, skills: selected });
   }, [selected]);
 
@@ -45,22 +44,25 @@ export default function JobCategorySelector() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-10 text-center mt-14 flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 px-4 animate-fade-in relative rounded-[20px] mb-3 text-white">
+    <div className="max-w-6xl mx-auto py-10 px-4 text-center mt-14 flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-white via-yellow-100 to-yellow-300 rounded-[20px] text-[#333]">
       <h2 className="text-2xl font-bold mb-6">
-        Pick <span className="text-blue-600">up to 3 job categories</span> that spark your interest.
+        Pick <span className="text-[#ea9f6f]">up to 3 job categories</span> that spark your interest.
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 justify-items-center font-bold">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 justify-items-center font-bold">
         {visibleCategories.map((category, idx) => (
           <button
             key={idx}
             onClick={() => handleCategoryClick(category)}
             className={`px-4 py-2 rounded-full border text-sm transition duration-300 transform hover:scale-105 ${
               selected.includes(category)
-                ? "bg-blue-600 text-white border-blue-600"
-                : "border-gray-300 hover:bg-blue-100 hover:text-blue-700 hover:shadow"
+                ? "bg-[#ea9f6f] text-white border-[#ea9f6f]"
+                : "border-gray-300 hover:bg-[#fdebd2] hover:text-[#ea9f6f]"
             } ${visible ? "animate-fade-down" : "opacity-0"}`}
-            style={{ animationDelay: `${idx * 100}ms`, animationFillMode: 'forwards' }}
+            style={{
+              animationDelay: `${idx * 100}ms`,
+              animationFillMode: 'forwards'
+            }}
           >
             {category} <span className="text-sm font-bold">+</span>
           </button>
@@ -69,14 +71,14 @@ export default function JobCategorySelector() {
 
       {!showAll && (
         <p
-          className="text-blue-600 text-sm mt-6 cursor-pointer hover:underline font-bold"
+          className="text-[#ea9f6f] text-sm mt-6 cursor-pointer hover:underline font-bold"
           onClick={() => setShowAll(true)}
         >
           Show more categories
         </p>
       )}
 
-      <p className="mt-4 text-sm text-gray-400 font-bold mb-4">
+      <p className="mt-4 text-sm text-gray-700 font-bold mb-4">
         Selected: {selected.join(', ') || 'None'}
       </p>
 

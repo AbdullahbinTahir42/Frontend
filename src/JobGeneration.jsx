@@ -50,7 +50,7 @@ export default function JobGenerationPage() {
           }
 
           await response.json();
-          navigate("/profile"); // redirect to profile after submit
+          navigate("/profile");
         } catch (error) {
           console.error("❌ Error submitting form data:", error.message);
         }
@@ -62,37 +62,39 @@ export default function JobGenerationPage() {
 
   if (!showResults) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-600 via-gray-800 to-gray-900 px-4 text-white mt-8 rounded-[20px]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-white via-yellow-100 to-yellow-200 px-4 text-[#333] rounded-[20px]">
         {showCircle && (
           <div
-            className="w-20 h-20 border-8 border-blue-400 border-t-transparent rounded-full animate-spin mb-6"
-            style={{ animationDuration: "3s" }}
+            className="w-20 h-20 border-8 border-[#ea9f6f] border-t-transparent rounded-full animate-spin mb-6"
+            style={{ animationDuration: "2s" }}
           />
         )}
-        <h2 className="text-2xl font-bold mb-6">Generating your Profile</h2>
-        <div className="flex flex-col items-start space-y-4">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-[#ea9f6f]">
+          Generating your profile...
+        </h2>
+        <div className="flex flex-col items-start space-y-4 text-gray-800 font-medium text-base">
           {step >= 1 && (
-            <div className="flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-pink-400 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <span className="w-7 h-7 rounded-full bg-pink-200 text-pink-600 flex items-center justify-center font-bold">
                 🎯
               </span>
-              <span>Finding listings</span>
+              <span>Finding job listings...</span>
             </div>
           )}
           {step >= 2 && (
-            <div className="flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-green-400 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <span className="w-7 h-7 rounded-full bg-green-200 text-green-600 flex items-center justify-center font-bold">
                 ⚙️
               </span>
-              <span>Customizing by Preferences</span>
+              <span>Customizing based on your preferences...</span>
             </div>
           )}
           {step >= 3 && (
-            <div className="flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <span className="w-7 h-7 rounded-full bg-yellow-300 text-yellow-700 flex items-center justify-center font-bold">
                 🏁
               </span>
-              <span>Finalizing List</span>
+              <span>Finalizing your profile...</span>
             </div>
           )}
         </div>
@@ -100,6 +102,5 @@ export default function JobGenerationPage() {
     );
   }
 
-  // We don't show anything here after loading because of redirect
   return null;
 }

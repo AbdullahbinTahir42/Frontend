@@ -7,14 +7,12 @@ export default function EarningSlider() {
   const navigate = useNavigate();
   const { formData, setFormData } = useFormData();
 
-  // Initialize from context (if user comes back)
   const initialType = formData.salary_expectation?.type || "salary";
   const initialAmount = formData.salary_expectation?.amount || (initialType === "hourly" ? 20 : 35000);
 
   const [isHourly, setIsHourly] = useState(initialType === "hourly");
   const [value, setValue] = useState(initialAmount);
 
-  // Toggle salary/hourly
   const handleToggle = (mode) => {
     const isNowHourly = mode === "hourly";
     const defaultValue = isNowHourly ? 20 : 35000;
@@ -31,7 +29,6 @@ export default function EarningSlider() {
     });
   };
 
-  // Slider value change
   const handleChange = (e) => {
     const newValue = Number(e.target.value);
     setValue(newValue);
@@ -50,26 +47,30 @@ export default function EarningSlider() {
   }, [formData.salary_expectation]);
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col justify-center items-center mt-14 rounded-[20px]">
-      <div className="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 backdrop-blur-sm w-full max-w-lg p-6 rounded-2xl shadow-md mx-4 animate-fade-in text-center">
-        <h2 className="text-4xl font-bold mb-6">
+    <div className="w-full min-h-screen bg-gradient-to-b from-white via-yellow-100 to-yellow-300 text-[#333] flex flex-col justify-center items-center mt-14 rounded-[20px] px-4">
+      <div className="bg-white shadow-xl w-full max-w-lg p-6 rounded-2xl mx-4 animate-fade-in text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-[#ea9f6f]">
           What's the minimum you'd like to earn?
         </h2>
 
         {/* Toggle */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-6 text-sm font-medium">
           <button
             onClick={() => handleToggle("salary")}
-            className={`px-4 py-2 rounded-l-md border ${
-              !isHourly ? "bg-blue-600 text-white" : "bg-white text-black"
+            className={`px-5 py-2 rounded-l-md border border-[#ea9f6f] transition ${
+              !isHourly
+                ? "bg-[#ea9f6f] text-white"
+                : "bg-white text-[#ea9f6f] hover:bg-[#fff3e5]"
             }`}
           >
             Salary
           </button>
           <button
             onClick={() => handleToggle("hourly")}
-            className={`px-4 py-2 rounded-r-md border ${
-              isHourly ? "bg-blue-600 text-white" : "bg-white text-black"
+            className={`px-5 py-2 rounded-r-md border border-[#ea9f6f] transition ${
+              isHourly
+                ? "bg-[#ea9f6f] text-white"
+                : "bg-white text-[#ea9f6f] hover:bg-[#fff3e5]"
             }`}
           >
             Hourly
@@ -77,10 +78,10 @@ export default function EarningSlider() {
         </div>
 
         {/* Display */}
-        <div className="text-4xl font-bold mb-2">
+        <div className="text-4xl font-bold mb-2 text-[#ea9f6f]">
           ${isHourly ? value.toFixed(2) : value.toLocaleString()}
         </div>
-        <div className="text-gray-300 mb-6">
+        <div className="text-gray-700 mb-6 font-medium">
           {isHourly ? "per hour" : "per year"}
         </div>
 
@@ -92,14 +93,14 @@ export default function EarningSlider() {
           step={isHourly ? 1 : 1000}
           value={value}
           onChange={handleChange}
-          className="w-full accent-blue-600"
+          className="w-full accent-[#ea9f6f]"
         />
 
         {/* Skip */}
         <div className="mt-6">
           <button
             onClick={() => navigate("/location")}
-            className="text-blue-400 hover:underline"
+            className="text-[#ea9f6f] font-semibold hover:underline text-sm"
           >
             Skip for now
           </button>
