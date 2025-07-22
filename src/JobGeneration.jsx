@@ -35,7 +35,7 @@ export default function JobGenerationPage() {
         };
 
         try {
-          const response = await fetch("http://127.0.0.1:8000/profiles/", {
+          const response = await fetch("https://api.hr.growvy.online/profiles", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

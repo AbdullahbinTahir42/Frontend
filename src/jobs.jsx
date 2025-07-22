@@ -13,6 +13,7 @@ const JobListings = () => {
   });
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -37,7 +38,7 @@ const JobListings = () => {
   const applyToJob = async (jobId) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://127.0.0.1:8000/applications/", {
+      const response = await fetch("https://api.hr.growvy.online/applications/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

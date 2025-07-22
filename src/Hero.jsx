@@ -105,9 +105,10 @@ const HowItWorks = () => {
           visible ? "opacity-100" : "opacity-0"
         }`}
       >
-        <h2 className="text-3xl sm:text-4xl font-bold mb-10 mt-6 text-[#ea9f6f]">
-          Quality Remote Jobs in Just 3 Steps
-        </h2>
+       <h2 className="text-3xl sm:text-4xl sm:p-5 font-bold mb-10 mt-12 text-[#ea9f6f]">
+  Quality Remote Jobs in Just 3 Steps
+</h2>
+
 
         <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center items-center gap-8 sm:gap-10 mb-10">
           {steps.map((step, index) => (

@@ -28,7 +28,7 @@ function RegisterForm({ onSuccess, onClose }) {
     try {
       localStorage.removeItem("token");
 
-      const response = await fetch("http://127.0.0.1:8000/register/", {
+      const response = await fetch("https://api.hr.growvy.online/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -39,13 +39,13 @@ function RegisterForm({ onSuccess, onClose }) {
         throw new Error(errorData.detail || "Registration failed");
       }
 
-      const loginResponse = await fetch("http://127.0.0.1:8000/token", {
+      const loginResponse = await fetch("https://api.hr.growvy.online/token", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: new URLSearchParams({
-          username: formData.email,
+        body: JSON.stringify({
+          email: formData.email,
           password: formData.password,
         }),
       });

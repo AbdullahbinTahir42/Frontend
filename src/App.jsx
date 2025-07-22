@@ -32,6 +32,9 @@ import JobListings from "./jobs";
 import AdminPanel from "./Admin";
 import PaymentForm from "./payment";
 
+
+
+
 // ✅ Form Context Provider
 import { FormProvider } from "./Formcontext";
 
@@ -56,7 +59,7 @@ function App() {
     const token = localStorage.getItem("token");
 
     if (token) {
-      fetch("http://127.0.0.1:8000/users/me/", {
+      fetch("https://api.hr.growvy.online/users/me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

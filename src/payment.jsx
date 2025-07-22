@@ -50,7 +50,7 @@ export default function PaymentForm() {
     payload.append("receipt", formData.receipt);
 
     try {
-      const res = await fetch("http://localhost:8000/payment/submit", {
+      const res = await fetch("https://api.hr.growvy.online/payment/submit", {
         method: "POST",
         body: payload,
       });
@@ -71,14 +71,14 @@ export default function PaymentForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-yellow-300 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-b from-white mt-7 to-yellow-300 flex items-center justify-center px-4">
       <form
         onSubmit={handleSubmit}
         className="bg-white/10 backdrop-blur-md p-6 rounded-xl shadow-md w-full max-w-sm"
       >
         {/* Logo */}
         <div className="mb-4 text-center mt-9">
-          <span className="text-2xl font-bold text-orange-600">go.Online</span>
+          <span className="text-2xl font-bold text-orange-600"></span>
         </div>
 
         {/* Heading */}
