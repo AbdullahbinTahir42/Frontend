@@ -1,21 +1,10 @@
 import React, { useRef, useState } from "react";
-
-// Mock Footer component for demonstration
-const Footer = () => (
-  <div className="mt-8 text-center text-gray-500 text-sm">
-    © 2025 HR Growvy. All rights reserved.
-  </div>
-);
-
-// Mock navigate function for demonstration
-const mockNavigate = (path) => {
-  console.log(`Would navigate to: ${path}`);
-  alert(`Would navigate to: ${path}`);
-};
+import { useNavigate } from "react-router-dom";
+import Footer from './Footer';
 
 export default function ResumeUpload() {
   const fileInputRef = useRef(null);
-  const navigate = mockNavigate;
+  const navigate = useNavigate(); // Fixed: removed mockNavigate
   const [showTooltip, setShowTooltip] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState("");
@@ -149,21 +138,19 @@ export default function ResumeUpload() {
         throw new Error("No authentication token found. Please log in again.");
       }
 
-      
       // Create FormData
-const formData = new FormData();
-formData.append("resume", selectedFile);
+      const formData = new FormData();
+      formData.append("resume", selectedFile);
 
-// Debug: log all form data pairs
-console.log("FormData content:");
-for (let [key, value] of formData.entries()) {
-  if (value instanceof File) {
-    console.log(`${key}: File - name=${value.name}, size=${value.size}, type=${value.type}`);
-  } else {
-    console.log(`${key}:`, value);
-  }
-}
-
+      // Debug: log all form data pairs
+      console.log("FormData content:");
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: File - name=${value.name}, size=${value.size}, type=${value.type}`);
+        } else {
+          console.log(`${key}:`, value);
+        }
+      }
 
       // Make the request
       const response = await fetch("https://api.hr.growvy.online/resume/analyze", {
@@ -245,8 +232,12 @@ for (let [key, value] of formData.entries()) {
         // Don't fail the entire flow for localStorage issues
       }
       
-      setMessage("Resume analyzed successfully! Redirecting...");
-      setTimeout(() => navigate("/remote-jobs"), 1500);
+      setMessage("Resume analyzed successfully! Redirecting to remote jobs...");
+      
+      // Navigate to /remote-jobs after analysis is complete
+      setTimeout(() => {
+        navigate("/remote-jobs");
+      }, 1500);
 
     } catch (error) {
       clearTimeout(timeoutId); // Clear timeout
@@ -380,7 +371,7 @@ for (let [key, value] of formData.entries()) {
         className="text-[#ea9f6f] font-bold cursor-pointer hover:underline"
       >
         Skip for Now
-      </p>
+      </p>  
 
       <Footer />
     </div>
