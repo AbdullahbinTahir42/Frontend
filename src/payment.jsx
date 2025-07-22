@@ -10,7 +10,7 @@ export default function PaymentForm() {
     method: "",
     receipt: null,
     termsAccepted: false,
-    plan: "", // ✅ NEW field added for Plan selection
+    plan: "",
   });
 
   const handleChange = (e) => {
@@ -45,18 +45,38 @@ export default function PaymentForm() {
     payload.append("name", formData.name);
     payload.append("email", formData.email);
     payload.append("method", formData.method);
-    payload.append("plan", formData.plan); // ✅ NEW field added
+    payload.append("plan", formData.plan);
     payload.append("termsAccepted", formData.termsAccepted);
     payload.append("receipt", formData.receipt);
 
     try {
+      // Get token from localStorage or wherever you store it
+      const token = localStorage.getItem("access_token");
+      
+      if (!token) {
+        alert("Please login first.");
+        navigate("/login");
+        return;
+      }
+
       const res = await fetch("https://api.hr.growvy.online/payment/submit", {
         method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`, // Add authentication header
+        },
         body: payload,
       });
 
       if (!res.ok) {
         const data = await res.json();
+        
+        // Handle authentication errors
+        if (res.status === 401) {
+          alert("Please login first.");
+          navigate("/login");
+          return;
+        }
+        
         alert(data.detail || "Payment submission failed");
         return;
       }
@@ -92,6 +112,7 @@ export default function PaymentForm() {
           value={formData.name}
           onChange={handleChange}
           className="w-full px-4 py-2 mb-3 rounded-md border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300"
+          required
         />
 
         {/* Email Field */}
@@ -102,27 +123,28 @@ export default function PaymentForm() {
           value={formData.email}
           onChange={handleChange}
           className="w-full px-4 py-2 mb-4 rounded-md border border-orange-200 focus:outline-none focus:ring-2 focus:ring-orange-300"
+          required
         />
 
-        {/* ✅ Plan Selection */}
+        {/* Plan Selection */}
         <select
           name="plan"
           value={formData.plan}
           onChange={handleChange}
           className="w-full px-4 py-2 mb-4 rounded-md border border-orange-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+          required
         >
           <option value="">Select a Plan</option>
           <option value="Plan A">Premium (Featured Plan)</option>
           <option value="Plan B">Standard (14-Day Full Access)</option>
         </select>
 
-        {/* ✅ Payment Instruction */}
+        {/* Payment Instruction */}
         <div className="bg-white text-orange-600 text-sm p-3 rounded-md mb-4 border border-orange-300 shadow">
           Please make your payment to this number:
           <br />
           <strong className="text-lg text-[#ea9f6f]">+92 3064257447</strong>
-               <p>Danial Manzoor
-</p>
+          <p>Danial Manzoor</p>
         </div>
 
         {/* Payment Method Buttons */}
@@ -148,7 +170,9 @@ export default function PaymentForm() {
           type="file"
           name="receipt"
           onChange={handleChange}
+          accept="image/*,.pdf"
           className="block w-full text-sm text-gray-700 bg-white border border-orange-300 rounded-md cursor-pointer mb-4"
+          required
         />
 
         {/* Terms Checkbox */}
@@ -159,6 +183,7 @@ export default function PaymentForm() {
             checked={formData.termsAccepted}
             onChange={handleChange}
             className="w-4 h-4 border-gray-300"
+            required
           />
           <span>Terms and Condition accepted</span>
         </label>
