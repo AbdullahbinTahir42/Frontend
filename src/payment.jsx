@@ -51,7 +51,7 @@ export default function PaymentForm() {
 
     try {
       // Get token from localStorage or wherever you store it
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       
       if (!token) {
         alert("Please login first.");
@@ -170,7 +170,7 @@ export default function PaymentForm() {
           type="file"
           name="receipt"
           onChange={handleChange}
-          accept="image/*,.pdf"
+          accept=".jpg,.jpeg,.png,.pdf"
           className="block w-full text-sm text-gray-700 bg-white border border-orange-300 rounded-md cursor-pointer mb-4"
           required
         />
