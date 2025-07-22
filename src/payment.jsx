@@ -51,7 +51,7 @@ export default function PaymentForm() {
 
     try {
       // Get token from localStorage or wherever you store it
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem("token");
       
       if (!token) {
         alert("Please login first.");
