@@ -170,7 +170,7 @@ export default function PaymentForm() {
           type="file"
           name="receipt"
           onChange={handleChange}
-          accept=".JPG,.JPEG,.PNG,.PDF"
+          accept=".jpg,.jpeg,.png,.pdf"
           className="block w-full text-sm text-gray-700 bg-white border border-orange-300 rounded-md cursor-pointer mb-4"
           required
         />
