@@ -188,8 +188,8 @@ export default function PaymentForm() {
           required
         >
           <option value="">Select a Plan</option>
-          <option value="Plan A">Premium (Featured Plan)</option>
-          <option value="Plan B">Standard (14-Day Full Access)</option>
+          <option value="Premium">Premium (Featured Plan)</option>
+          <option value="Standard">Standard (14-Day Full Access)</option>
         </select>
 
         {/* Payment Instruction */}
