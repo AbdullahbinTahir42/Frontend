@@ -30,9 +30,18 @@ export default function PaymentForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submit button clicked - Starting payment submission process");
 
-    if (!formData.termsAccepted) {
-      alert("You must accept the terms and conditions.");
+    // Validate all required fields
+    console.log("Current form data:", formData);
+
+    if (!formData.name.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      alert("Please enter your email.");
       return;
     }
 
@@ -41,17 +50,26 @@ export default function PaymentForm() {
       return;
     }
 
-    const payload = new FormData();
-    payload.append("name", formData.name);
-    payload.append("email", formData.email);
-    payload.append("method", formData.method);
-    payload.append("plan", formData.plan);
-    payload.append("termsAccepted", formData.termsAccepted);
-    payload.append("receipt", formData.receipt);
+    if (!formData.method) {
+      alert("Please select a payment method.");
+      return;
+    }
+
+    if (!formData.receipt) {
+      alert("Please upload a receipt.");
+      return;
+    }
+
+    if (!formData.termsAccepted) {
+      alert("You must accept the terms and conditions.");
+      return;
+    }
+
+    console.log("All validations passed - Preparing API call");
 
     try {
-      // Get token from localStorage or wherever you store it
-      const token = localStorage.getItem("token");
+      // Get token from localStorage
+      const token = localStorage.getItem("token") || localStorage.getItem("access_token");
       
       if (!token) {
         alert("Please login first.");
@@ -59,34 +77,69 @@ export default function PaymentForm() {
         return;
       }
 
+      console.log("Token found - Preparing form data payload");
+
+      // Prepare form data AFTER all validations
+      const payload = new FormData();
+      payload.append("name", formData.name.trim());
+      payload.append("email", formData.email.trim());
+      payload.append("method", formData.method);
+      payload.append("plan", formData.plan);
+      payload.append("termsAccepted", formData.termsAccepted.toString());
+      payload.append("receipt", formData.receipt);
+
+      // Log payload contents
+      console.log("Payload prepared with following data:");
+      for (let [key, value] of payload.entries()) {
+        console.log(`${key}:`, value instanceof File ? `File: ${value.name}` : value);
+      }
+
+      console.log("Making API call to:", "https://api.hr.growvy.online/payment/submit");
+
       const res = await fetch("https://api.hr.growvy.online/payment/submit", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`, // Add authentication header
+          "Authorization": `Bearer ${token}`,
         },
         body: payload,
       });
 
+      console.log("API response status:", res.status);
+
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({ detail: "Unknown error occurred" }));
+        console.log("API error response:", data);
         
-        // Handle authentication errors
+        // Handle different error status codes
         if (res.status === 401) {
-          alert("Please login first.");
+          alert("Session expired. Please login again.");
+          localStorage.removeItem("token");
           navigate("/login");
           return;
+        } else if (res.status === 400) {
+          alert(data.detail || "Validation error. Please check your input.");
+          return;
+        } else if (res.status === 404) {
+          alert(data.detail || "User profile not found. Please create a profile first.");
+          return;
+        } else {
+          alert(data.detail || `Error ${res.status}: Payment submission failed`);
+          return;
         }
-        
-        alert(data.detail || "Payment submission failed");
-        return;
       }
 
       const data = await res.json();
-      alert("Payment submitted successfully!");
+      console.log("Payment submission successful:", data);
+      alert("🎉 Payment submitted successfully! Your payment is being verified.");
       navigate("/profile");
+      
     } catch (err) {
-      console.error(err);
-      alert("Something went wrong.");
+      console.error("Payment submission error:", err);
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        alert("Network error. Please check your internet connection and try again.");
+      } else {
+        alert("Something went wrong. Please try again later.");
+      }
     }
   };
 

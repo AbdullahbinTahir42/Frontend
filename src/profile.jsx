@@ -47,7 +47,7 @@ export default function Profile() {
     const token = localStorage.getItem("token");
 
     setLoading(true);
-    fetch("http://localhost:8000/profile", {
+    fetch("https://localhost:8000/profile", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
