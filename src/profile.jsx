@@ -47,7 +47,7 @@ export default function Profile() {
     const token = localStorage.getItem("token");
 
     setLoading(true);
-    fetch("https://localhost:8000/profile", {
+    fetch("https://api.hr.growvy.online/profile", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
