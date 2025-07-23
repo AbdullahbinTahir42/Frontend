@@ -256,46 +256,61 @@ export default function AdminPanel() {
         </div>
 
         {/* Verifying Payments Section */}
-        {verifyingProfiles.length > 0 && (
-          <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
-            <div className="p-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800">
-                Recent Payment Submissions ({verifyingProfiles.length})
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                Users who recently submitted payment receipts for verification.
-              </p>
+            {verifyingProfiles.length > 0 && (
+  <div className="bg-white rounded-lg shadow border border-gray-200 mb-8">
+    <div className="p-4 border-b border-gray-200">
+      <h2 className="text-xl font-semibold text-gray-800">
+        Recent Payment Submissions ({verifyingProfiles.length})
+      </h2>
+      <p className="text-sm text-gray-500 mt-1">
+        Users who recently submitted payment receipts for verification.
+      </p>
+    </div>
+    <div className="divide-y divide-gray-200">
+      {verifyingProfiles.map((profile) => (
+        <div key={profile.id} className="p-4 hover:bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+              <span className="text-gray-600 text-lg font-bold">
+                {profile.full_name?.charAt(0).toUpperCase()}
+              </span>
             </div>
-            <div className="divide-y divide-gray-200">
-              {verifyingProfiles.map((profile) => (
-                <div key={profile.id} className="p-4 hover:bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
-                      <span className="text-gray-600 text-lg font-bold">
-                        {profile.full_name?.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">{profile.full_name}</p>
-                      <p className="text-gray-500 text-sm">{profile.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 mt-2 sm:mt-0">
-                     <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">
-                       Plan: {profile.plan || "N/A"}
-                     </span>
-                    <button
-                      onClick={() => handleMarkPayment(profile.id)}
-                      className="bg-[#ea9f6f] text-white px-3 py-1 rounded text-xs hover:bg-orange-500"
-                    >
-                      Verify Payment
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div>
+              <p className="font-medium text-gray-800">{profile.full_name}</p>
+              <p className="text-gray-500 text-sm">{profile.email}</p>
             </div>
           </div>
-        )}
+          
+          {/* Action Buttons Area */}
+          <div className="flex items-center gap-4 mt-2 sm:mt-0">
+            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">
+              Plan: {profile.plan || "N/A"}
+            </span>
+
+            {/* NEW: VIEW RECEIPT BUTTON  */}
+            {profile.receipt && (
+              <a
+                href={`${API_URL}/receipts/${profile.receipt}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gray-200 text-gray-800 px-3 py-1 rounded text-xs hover:bg-gray-300"
+              >
+                View Receipt
+              </a>
+            )}
+
+            <button
+              onClick={() => handleMarkPayment(profile.id)}
+              className="bg-[#ea9f6f] text-white px-3 py-1 rounded text-xs hover:bg-orange-500"
+            >
+              Verify Payment
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {/* Applications */}
         <section className="bg-white rounded-lg shadow border mb-8">
